@@ -7,7 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "mastra dev",
     "build": "mastra build",
-    "start": "mastra start"
+    "start": "mastra start",
+    "template:browsing-agent:test": "echo \"Error: no test specified\" && exit 1",
+    "template:browsing-agent:dev": "mastra dev",
+    "template:browsing-agent:build": "mastra build",
+    "template:browsing-agent:start": "mastra start"
   },
   "keywords": [],
   "author": "",
@@ -22,11 +26,15 @@
     "@mastra/libsql": "^0.16.1",
     "@mastra/loggers": "^0.10.18",
     "@mastra/memory": "^0.15.9",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "@browserbasehq/stagehand": "^2.5.2",
+    "@ai-sdk/openai": "^2.0.52"
   },
   "devDependencies": {
     "@types/node": "^24.9.1",
     "mastra": "^0.17.5",
-    "typescript": "^5.9.3"
-  }
+    "typescript": "^5.9.3",
+    "dotenv": "^17.2.1"
+  },
+  "peerDependencies": {}
 }
