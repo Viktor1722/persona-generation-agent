@@ -122,7 +122,7 @@ Input: Person's Name + Context
     │   - Articles/Publications │
     │                           │
     └─→ Social Media Research ──┤
-        - Instagram deep dive   │
+        - Instagram  │
         - Twitter analysis      │
                                 │
          ↓←─────────────────────┘

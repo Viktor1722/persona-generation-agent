@@ -83,8 +83,8 @@ For each piece of information, cite:
 - Suggest additional search terms if initial searches yield limited results
 
 `,
-  model: "openai/gpt-4o-mini",
-  tools: { braveSearchTool, webScraperTool, instagramProfileTool },
+  model: "perplexity/sonar-pro",
+  tools: {},
   memory: new Memory({
     storage: new LibSQLStore({
       url: "file:../mastra.db", // path is relative to the .mastra/output directory

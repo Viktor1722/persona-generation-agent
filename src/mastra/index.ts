@@ -1,12 +1,13 @@
 import { Mastra } from "@mastra/core/mastra";
 import { PinoLogger } from "@mastra/loggers";
 import { LibSQLStore } from "@mastra/libsql";
-
 import { personaDataCollectionAgent } from "./agents/personaDataCollection-agent";
 import { personaResearchWorkflow } from "./workflows/persona-research-workflow";
+import { questionsAgent } from "./agents/questions-agent";
+import { personaAgent } from "./agents/persona-agent";
 
 export const mastra = new Mastra({
-  agents: { personaDataCollectionAgent },
+  agents: { personaDataCollectionAgent, questionsAgent, personaAgent },
   workflows: { personaResearchWorkflow },
 
   storage: new LibSQLStore({
