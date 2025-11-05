@@ -1,14 +1,15 @@
 import { Mastra } from "@mastra/core/mastra";
 import { PinoLogger } from "@mastra/loggers";
 import { LibSQLStore } from "@mastra/libsql";
-import { personaDataCollectionAgent } from "./agents/personaDataCollection-agent";
-import { personaResearchWorkflow } from "./workflows/persona-research-workflow";
+// import { personaResearchWorkflow } from "./workflows/persona-research-workflow";
 import { questionsAgent } from "./agents/questions-agent";
 import { personaAgent } from "./agents/persona-agent";
+import { interviewPersonaAgent } from "./agents/interview-persona-agent";
+import { syntheticInterviewWorkflow } from "./workflows/synthetic-interview-workflow";
 
 export const mastra = new Mastra({
-  agents: { personaDataCollectionAgent, questionsAgent, personaAgent },
-  workflows: { personaResearchWorkflow },
+  agents: { questionsAgent, personaAgent, interviewPersonaAgent },
+  workflows: { syntheticInterviewWorkflow },
 
   storage: new LibSQLStore({
     // stores observability, scores, ... into memory storage, if it needs to persist, change to file:../mastra.db
@@ -24,6 +25,6 @@ export const mastra = new Mastra({
   },
   observability: {
     // Enables DefaultExporter and CloudExporter for AI tracing
-    default: { enabled: true },
+    default: { enabled: false },
   },
 });

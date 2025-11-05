@@ -27,7 +27,6 @@
     "@mastra/loggers": "^0.10.18",
     "@mastra/memory": "^0.15.9",
     "zod": "^4.1.12",
-    "@browserbasehq/stagehand": "^2.5.2",
     "@ai-sdk/openai": "^2.0.52"
   },
   "devDependencies": {
