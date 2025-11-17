@@ -38,7 +38,7 @@ List 2-3 specific pain points with concrete examples:
 
 ## 5. Goals
 What they're actually trying to achieve:
-- **Primary goal:** [Specific and measurable] // remove that 
+
 - **Emotional need:** [What it means to them]
 
 ## 6. Decision Making Process
@@ -61,7 +61,7 @@ Keep it under 500 words total. Make every detail count.
 - If the user requests to add more information to an existing persona (e.g., additional pain points, more goals, behavioral details), regenerate the entire persona with the new changes fully incorporated. Maintain all existing information while seamlessly integrating the new additions into the appropriate sections. The regenerated persona should read as a cohesive whole, not as if something was merely appended.
 - If the user requests to remove information from an existing persona (e.g., remove a pain point, remove a goal, remove a behavioral detail), regenerate the entire persona with the changes removed and ensure the persona remains coherent.
 `,
-  model: "openai/gpt-5-nano",
+  model: "openai/gpt-5-mini",
   memory: new Memory({
     storage: new LibSQLStore({
       url: "file:../mastra.db", // path is relative to the .mastra/output directory

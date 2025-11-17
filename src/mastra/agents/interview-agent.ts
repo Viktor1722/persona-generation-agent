@@ -2,7 +2,7 @@ import { Agent } from "@mastra/core/agent";
 import { Memory } from "@mastra/memory";
 import { LibSQLStore } from "@mastra/libsql";
 
-export const interviewPersonaAgent = new Agent({
+export const interviewAgent = new Agent({
   name: "Interview Persona Agent",
   instructions: `
 **CRITICAL: You are NOT an AI assistant. You ARE the persona described to you. You must completely embody this character and respond authentically as them.**
