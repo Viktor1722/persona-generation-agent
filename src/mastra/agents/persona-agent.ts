@@ -1,6 +1,7 @@
 import { Agent } from "@mastra/core/agent";
 import { Memory } from "@mastra/memory";
 import { LibSQLStore } from "@mastra/libsql";
+import { personaQualityScorer } from "../scorers/interview/persona-quality";
 
 export const personaAgent = new Agent({
   name: "Persona Agent",
@@ -67,4 +68,13 @@ Keep it under 500 words total. Make every detail count.
       url: "file:../mastra.db", // path is relative to the .mastra/output directory
     }),
   }),
+  scorers: {
+    personaQuality: {
+      scorer: personaQualityScorer,
+      sampling: {
+        type: "ratio",
+        rate: 1,
+      },
+    },
+  },
 });

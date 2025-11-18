@@ -4,12 +4,20 @@ import { LibSQLStore } from "@mastra/libsql";
 import { questionsAgent } from "./agents/questions-agent";
 import { personaAgent } from "./agents/persona-agent";
 import { interviewAgent } from "./agents/interview-agent";
+import { syntheticInterviewWorkflowNew } from "./workflows/synthetic-interview-workflow-new";
 import { syntheticInterviewWorkflow } from "./workflows/synthetic-interview-workflow";
+import {
+  overallPerformanceScorer,
+  multiInterviewConsistencyScorer,
+} from "./scorers/interview";
 
 export const mastra = new Mastra({
   agents: { questionsAgent, personaAgent, interviewAgent },
-  workflows: { syntheticInterviewWorkflow },
-
+  workflows: { syntheticInterviewWorkflowNew, syntheticInterviewWorkflow },
+  scorers: {
+    overallPerformanceScorer,
+    multiInterviewConsistencyScorer,
+  },
   storage: new LibSQLStore({
     // stores observability, scores, ... into memory storage, if it needs to persist, change to file:../mastra.db
     url: ":memory:",
@@ -21,9 +29,5 @@ export const mastra = new Mastra({
   telemetry: {
     // Telemetry is deprecated and will be removed in the Nov 4th release
     enabled: false,
-  },
-  observability: {
-    // Enables DefaultExporter and CloudExporter for AI tracing
-    default: { enabled: false },
   },
 });
