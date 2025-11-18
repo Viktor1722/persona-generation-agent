@@ -1,5 +1,13 @@
 import { createStep, createWorkflow } from "@mastra/core/workflows";
 import { z } from "zod";
+import {
+  personaQualityScorer,
+  topicRelevanceScorer,
+  problemSpecificityScorer,
+  momTestAdherenceScorer,
+  behavioralAccuracyScorer,
+  intraInterviewConsistencyScorer,
+} from "../scorers/interview";
 
 /**
  * Synthetic Interview Workflow
@@ -32,6 +40,15 @@ const generatePersonaStep = createStep({
     interviewFocus: z.string(),
     industry: z.string(),
   }),
+  scorers: {
+    personaQuality: {
+      scorer: personaQualityScorer,
+      sampling: {
+        type: "ratio",
+        rate: 1,
+      },
+    },
+  },
   execute: async ({ inputData, mastra }) => {
     const {
       personaDescription,
@@ -101,6 +118,29 @@ const generateQuestionsStep = createStep({
     questionCount: z.number(),
     industry: z.string(),
   }),
+  scorers: {
+    topicRelevance: {
+      scorer: topicRelevanceScorer,
+      sampling: {
+        type: "ratio",
+        rate: 1,
+      },
+    },
+    problemSpecificity: {
+      scorer: problemSpecificityScorer,
+      sampling: {
+        type: "ratio",
+        rate: 1,
+      },
+    },
+    momTestAdherence: {
+      scorer: momTestAdherenceScorer,
+      sampling: {
+        type: "ratio",
+        rate: 1,
+      },
+    },
+  },
   execute: async ({ inputData, mastra }) => {
     const {
       topic,
@@ -203,6 +243,22 @@ const conductInterviewStep = createStep({
     questionCount: z.number(),
     industry: z.string(),
   }),
+  scorers: {
+    behavioralAccuracy: {
+      scorer: behavioralAccuracyScorer,
+      sampling: {
+        type: "ratio",
+        rate: 1,
+      },
+    },
+    intraInterviewConsistency: {
+      scorer: intraInterviewConsistencyScorer,
+      sampling: {
+        type: "ratio",
+        rate: 1,
+      },
+    },
+  },
   execute: async ({ inputData, mastra }) => {
     const {
       personaProfile,
@@ -214,10 +270,10 @@ const conductInterviewStep = createStep({
       industry,
     } = inputData;
 
-    const interviewAgent = mastra?.getAgent("interviewPersonaAgent");
+    const interviewAgent = mastra?.getAgent("interviewAgent");
 
     if (!interviewAgent) {
-      throw new Error("Interview Persona Agent not found");
+      throw new Error("Interview Agent not found");
     }
 
     const transcript: Array<{ question: string; answer: string }> = [];
