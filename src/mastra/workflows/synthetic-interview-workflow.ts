@@ -2,22 +2,14 @@ import { createStep, createWorkflow } from "@mastra/core/workflows";
 import { z } from "zod";
 import {
   personaQualityScorer,
-  topicRelevanceScorer,
   problemSpecificityScorer,
-  momTestAdherenceScorer,
   behavioralAccuracyScorer,
-  intraInterviewConsistencyScorer,
+  personaBehaviorConsistencyScorer,
+  answerRelevancyScorer,
+  faithfulnessScorer,
+  hallucinationScorer,
+  promptAlignmentScorer,
 } from "../scorers/interview";
-
-/**
- * Synthetic Interview Workflow
- *
- * This workflow orchestrates the complete synthetic interview process:
- * 1. Generate Persona - Create a detailed persona based on user requirements
- * 2. Generate Questions - Create Mom Test questions for the interview
- * 3. Conduct Interview - Have the persona answer each question authentically
- * 4. Format Results - Structure the interview transcript with metadata
- */
 
 // Step 1: Generate Persona
 const generatePersonaStep = createStep({
@@ -43,6 +35,20 @@ const generatePersonaStep = createStep({
   scorers: {
     personaQuality: {
       scorer: personaQualityScorer,
+      sampling: {
+        type: "ratio",
+        rate: 1,
+      },
+    },
+    faithfulness: {
+      scorer: faithfulnessScorer,
+      sampling: {
+        type: "ratio",
+        rate: 1,
+      },
+    },
+    promptAlignment: {
+      scorer: promptAlignmentScorer,
       sampling: {
         type: "ratio",
         rate: 1,
@@ -119,13 +125,6 @@ const generateQuestionsStep = createStep({
     industry: z.string(),
   }),
   scorers: {
-    topicRelevance: {
-      scorer: topicRelevanceScorer,
-      sampling: {
-        type: "ratio",
-        rate: 1,
-      },
-    },
     problemSpecificity: {
       scorer: problemSpecificityScorer,
       sampling: {
@@ -133,8 +132,15 @@ const generateQuestionsStep = createStep({
         rate: 1,
       },
     },
-    momTestAdherence: {
-      scorer: momTestAdherenceScorer,
+    answerRelevancy: {
+      scorer: answerRelevancyScorer,
+      sampling: {
+        type: "ratio",
+        rate: 1,
+      },
+    },
+    hallucination: {
+      scorer: hallucinationScorer,
       sampling: {
         type: "ratio",
         rate: 1,
@@ -252,7 +258,28 @@ const conductInterviewStep = createStep({
       },
     },
     intraInterviewConsistency: {
-      scorer: intraInterviewConsistencyScorer,
+      scorer: personaBehaviorConsistencyScorer,
+      sampling: {
+        type: "ratio",
+        rate: 1,
+      },
+    },
+    answerRelevancy: {
+      scorer: answerRelevancyScorer,
+      sampling: {
+        type: "ratio",
+        rate: 1,
+      },
+    },
+    faithfulness: {
+      scorer: faithfulnessScorer,
+      sampling: {
+        type: "ratio",
+        rate: 1,
+      },
+    },
+    hallucination: {
+      scorer: hallucinationScorer,
       sampling: {
         type: "ratio",
         rate: 1,

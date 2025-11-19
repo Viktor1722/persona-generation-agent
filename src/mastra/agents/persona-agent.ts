@@ -68,13 +68,4 @@ Keep it under 500 words total. Make every detail count.
       url: "file:../mastra.db", // path is relative to the .mastra/output directory
     }),
   }),
-  scorers: {
-    personaQuality: {
-      scorer: personaQualityScorer,
-      sampling: {
-        type: "ratio",
-        rate: 1,
-      },
-    },
-  },
 });

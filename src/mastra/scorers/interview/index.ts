@@ -1,9 +1,15 @@
 // Barrel export for all interview scorers
 export { personaQualityScorer } from "./persona-quality";
-export { topicRelevanceScorer } from "./topic-relevance";
 export { problemSpecificityScorer } from "./problem-specificity";
-export { momTestAdherenceScorer } from "./mom-test-adherence";
 export { behavioralAccuracyScorer } from "./behavioral-accuracy";
-export { intraInterviewConsistencyScorer } from "./intra-interview-consistency";
-export { overallPerformanceScorer } from "./overall-performance";
+export { personaBehaviorConsistencyScorer } from "./persona-Behavior-consistency";
 export { multiInterviewConsistencyScorer } from "./multi-interview-consistency";
+
+// Pre-built scorers from Mastra
+export {
+  answerRelevancyScorer,
+  faithfulnessScorer,
+  hallucinationScorer,
+  promptAlignmentScorer,
+  prebuiltScorers,
+} from "./prebuild-scorers";

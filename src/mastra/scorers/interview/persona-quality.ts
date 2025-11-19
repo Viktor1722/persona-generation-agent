@@ -14,7 +14,7 @@ export const personaQualityScorer = createScorer({
   judge: {
     model: "openai/gpt-5",
     instructions:
-      "You are an expert evaluator of user personas for product research and customer discovery.",
+      "You are an expert evaluator of user personas for product research and customer discovery and problem discovery and solution discovery. You have to evaluate the persona based on the industry, context, and description provided. You are critical and examine if the persona is really useful or not for the purpose of the interviews. Additionally you look at all of the components that the persona has and if something is missing or you think its not well included you flag it. Also use simple words dont use complex words and dont use jargon.",
   },
 })
   .preprocess(({ run }) => {
@@ -74,7 +74,10 @@ Evaluate across three dimensions:
 2. SPECIFICITY (0-1): Is the persona specific and detailed, or vague and generic?
    - List any areas that are too vague
    
-3. RELEVANCE (0-1): Does the persona align with the industry, context, and description provided?
+3. RELEVANCE (0-1): Does the persona align with the industry, context, and description provided and does it really represent the user and their needs?
+Evaluates whether personality is coherent, contradictory where realistic, and grounded in Big Five traits. This ensures the persona doesn't become a generic stereotype but represents a specific, psychologically believable person.
+Checks that motivations are specific to the SME owner's role (not generic), decision-making processes are realistic timelines, and dealbreakers are documented. This is where you verify Claire's "2-8 week decision timeline" or "won't tolerate hidden fees" are based on real SME behavior, not assumptions.
+ Each pain point must be concrete, quantified, and traceable to at least one real data source (support ticket, customer review, interview quote, or industry report). If you can't find supporting evidence, it's marked as HYPOTHESIS requiring validation.
    - List any alignment issues
 
 Return JSON matching the schema with scores, reasoning, and identified issues.
@@ -83,11 +86,10 @@ Return JSON matching the schema with scores, reasoning, and identified issues.
   })
   .generateScore(({ results }) => {
     const analysis = results.analyzeStepResult;
-    // Weighted average: completeness 40%, specificity 30%, relevance 30%
     const score =
-      analysis.completeness.score * 0.4 +
-      analysis.specificity.score * 0.3 +
-      analysis.relevance.score * 0.3;
+      analysis.completeness.score * 0.2 +
+      analysis.specificity.score * 0.4 +
+      analysis.relevance.score * 0.4;
     return Math.max(0, Math.min(1, score));
   })
   .generateReason(({ results, score }) => {

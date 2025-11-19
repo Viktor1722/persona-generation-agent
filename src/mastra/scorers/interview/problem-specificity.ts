@@ -18,7 +18,7 @@ export const problemSpecificityScorer = createScorer({
   },
 })
   .preprocess(({ run }) => {
-    const questions = run.output?.questions || [];
+    const questions = run.output?.questions || "";
     const topic = run.input?.topic || "";
     const interviewFocus = run.input?.interviewFocus || "";
     const industry = run.input?.industry || "";

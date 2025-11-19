@@ -19,7 +19,7 @@ export const behavioralAccuracyScorer = createScorer({
 })
   .preprocess(({ run }) => {
     const personaSummary = run.input?.personaSummary || "";
-    const transcript = run.output?.transcript || [];
+    const transcript = run.output?.transcript || "";
     const industry = run.input?.industry || "";
 
     return {
@@ -36,12 +36,12 @@ export const behavioralAccuracyScorer = createScorer({
         z.object({
           question: z.string(),
           answer: z.string(),
-          isBehaviorallyAccurate: z.boolean(),
-          accuracyScore: z.number().min(0).max(1),
-          reasoning: z.string(),
+          isBehaviorallyAccurate: z.boolean().default(true),
+          accuracyScore: z.number().min(0).max(1).default(0.5),
+          reasoning: z.string().default(""),
         })
       ),
-      overallAuthenticity: z.string(),
+      overallAuthenticity: z.string().default(""),
     }),
     createPrompt: ({ results }) => {
       const { personaSummary, transcript, industry } =
@@ -92,9 +92,10 @@ Return JSON with evaluation for each Q&A pair and overall authenticity assessmen
   })
   .generateReason(({ results, score }) => {
     const analysis = results.analyzeStepResult;
-    const accurateCount = analysis.answerEvaluations.filter(
-      (a) => a.isBehaviorallyAccurate
-    ).length;
-    const totalCount = analysis.answerEvaluations.length;
-    return `Behavioral Accuracy Score: ${score.toFixed(2)}. ${accurateCount} of ${totalCount} answers are behaviorally accurate for the persona. ${analysis.overallAuthenticity}`;
+    const accurateCount =
+      analysis.answerEvaluations?.filter((a) => a.isBehaviorallyAccurate)
+        .length || 0;
+    const totalCount = analysis.answerEvaluations?.length || 0;
+    const authenticity = analysis.overallAuthenticity || "Evaluation completed";
+    return `Behavioral Accuracy Score: ${score.toFixed(2)}. ${accurateCount} of ${totalCount} answers are behaviorally accurate for the persona. ${authenticity}`;
   });

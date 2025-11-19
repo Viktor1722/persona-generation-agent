@@ -2,11 +2,9 @@ import { createStep, createWorkflow } from "@mastra/core/workflows";
 import { z } from "zod";
 import {
   personaQualityScorer,
-  topicRelevanceScorer,
   problemSpecificityScorer,
-  momTestAdherenceScorer,
   behavioralAccuracyScorer,
-  intraInterviewConsistencyScorer,
+  personaBehaviorConsistencyScorer,
 } from "../scorers/interview";
 import PDFDocument from "pdfkit";
 import fs from "fs";
@@ -112,22 +110,8 @@ const generateQuestionsStep = createStep({
     industry: z.string(),
   }),
   scorers: {
-    topicRelevance: {
-      scorer: topicRelevanceScorer,
-      sampling: {
-        type: "ratio",
-        rate: 1,
-      },
-    },
     problemSpecificity: {
       scorer: problemSpecificityScorer,
-      sampling: {
-        type: "ratio",
-        rate: 1,
-      },
-    },
-    momTestAdherence: {
-      scorer: momTestAdherenceScorer,
       sampling: {
         type: "ratio",
         rate: 1,
@@ -247,7 +231,7 @@ const conductInterviewStep = createStep({
       },
     },
     intraInterviewConsistency: {
-      scorer: intraInterviewConsistencyScorer,
+      scorer: personaBehaviorConsistencyScorer,
       sampling: {
         type: "ratio",
         rate: 1,

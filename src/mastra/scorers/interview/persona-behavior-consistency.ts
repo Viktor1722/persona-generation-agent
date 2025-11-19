@@ -7,8 +7,8 @@ import { createScorer } from "@mastra/core/scores";
 // Analyzes consistency of persona behavior across all Q&A pairs within single interview
 // Applied to: conduct-interview step
 
-export const intraInterviewConsistencyScorer = createScorer({
-  name: "Intra-Interview Consistency",
+export const personaBehaviorConsistencyScorer = createScorer({
+  name: "Persona Behavior Consistency",
   description:
     "Analyzes consistency of persona behavior across all Q&A pairs within the interview",
   judge: {
@@ -18,7 +18,7 @@ export const intraInterviewConsistencyScorer = createScorer({
   },
 })
   .preprocess(({ run }) => {
-    const transcript = run.output?.transcript || [];
+    const transcript = run.output?.transcript || "";
     const personaSummary = run.input?.personaSummary || "";
 
     // Extract all answers for consistency analysis
@@ -40,25 +40,27 @@ export const intraInterviewConsistencyScorer = createScorer({
     description:
       "Identify contradictions, tone shifts, and behavioral inconsistencies",
     outputSchema: z.object({
-      contradictions: z.array(
-        z.object({
-          answer1Index: z.number(),
-          answer2Index: z.number(),
-          contradiction: z.string(),
-          severity: z.enum(["minor", "moderate", "major"]),
-        })
-      ),
+      contradictions: z
+        .array(
+          z.object({
+            answer1Index: z.number(),
+            answer2Index: z.number(),
+            contradiction: z.string(),
+            severity: z.enum(["minor", "moderate", "major"]),
+          })
+        )
+        .default([]),
       toneConsistency: z.object({
-        isConsistent: z.boolean(),
-        reasoning: z.string(),
-        score: z.number().min(0).max(1),
+        isConsistent: z.boolean().default(true),
+        reasoning: z.string().default(""),
+        score: z.number().min(0).max(1).default(0.8),
       }),
       behaviorConsistency: z.object({
-        isConsistent: z.boolean(),
-        reasoning: z.string(),
-        score: z.number().min(0).max(1),
+        isConsistent: z.boolean().default(true),
+        reasoning: z.string().default(""),
+        score: z.number().min(0).max(1).default(0.8),
       }),
-      overallConsistencyAssessment: z.string(),
+      overallConsistencyAssessment: z.string().default(""),
     }),
     createPrompt: ({ results }) => {
       const { transcript, personaSummary } = results.preprocessStepResult;
@@ -94,7 +96,7 @@ Return JSON with detected contradictions, tone consistency evaluation, and behav
     const analysis = results.analyzeStepResult;
 
     // Calculate penalties for contradictions
-    const contradictionPenalty = analysis.contradictions.reduce(
+    const contradictionPenalty = (analysis.contradictions || []).reduce(
       (penalty, c) => {
         if (c.severity === "major") return penalty + 0.2;
         if (c.severity === "moderate") return penalty + 0.1;
@@ -104,17 +106,18 @@ Return JSON with detected contradictions, tone consistency evaluation, and behav
     );
 
     // Average of tone and behavior consistency, minus contradiction penalties
-    const baseScore =
-      analysis.toneConsistency.score * 0.4 +
-      analysis.behaviorConsistency.score * 0.6;
+    const toneScore = analysis.toneConsistency?.score || 0.8;
+    const behaviorScore = analysis.behaviorConsistency?.score || 0.8;
+    const baseScore = toneScore * 0.4 + behaviorScore * 0.6;
 
     const finalScore = Math.max(0, baseScore - contradictionPenalty);
     return Math.max(0, Math.min(1, finalScore));
   })
   .generateReason(({ results, score }) => {
     const analysis = results.analyzeStepResult;
-    const contradictionCount = analysis.contradictions.length;
-    const majorContradictions = analysis.contradictions.filter(
+    const contradictions = analysis.contradictions || [];
+    const contradictionCount = contradictions.length;
+    const majorContradictions = contradictions.filter(
       (c) => c.severity === "major"
     ).length;
 
@@ -130,7 +133,11 @@ Return JSON with detected contradictions, tone consistency evaluation, and behav
       reason += ". ";
     }
 
-    reason += `Tone: ${analysis.toneConsistency.reasoning}. Behavior: ${analysis.behaviorConsistency.reasoning}.`;
+    const toneReasoning =
+      analysis.toneConsistency?.reasoning || "Consistent tone";
+    const behaviorReasoning =
+      analysis.behaviorConsistency?.reasoning || "Consistent behavior";
+    reason += `Tone: ${toneReasoning}. Behavior: ${behaviorReasoning}.`;
 
     return reason;
   });

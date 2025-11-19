@@ -6,16 +6,12 @@ import { personaAgent } from "./agents/persona-agent";
 import { interviewAgent } from "./agents/interview-agent";
 import { syntheticInterviewWorkflowNew } from "./workflows/synthetic-interview-workflow-new";
 import { syntheticInterviewWorkflow } from "./workflows/synthetic-interview-workflow";
-import {
-  overallPerformanceScorer,
-  multiInterviewConsistencyScorer,
-} from "./scorers/interview";
+import { multiInterviewConsistencyScorer } from "./scorers/interview";
 
 export const mastra = new Mastra({
   agents: { questionsAgent, personaAgent, interviewAgent },
   workflows: { syntheticInterviewWorkflowNew, syntheticInterviewWorkflow },
   scorers: {
-    overallPerformanceScorer,
     multiInterviewConsistencyScorer,
   },
   storage: new LibSQLStore({
