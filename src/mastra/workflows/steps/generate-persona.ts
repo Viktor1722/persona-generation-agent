@@ -12,7 +12,17 @@ export const generatePersonaStep = createStep({
     topic: z.string(),
     questionCount: z.number(),
     interviewFocus: z.string(),
-    researchContext: z.string(),
+    researchOutput: z.object({
+      summary: z.string(),
+      top_findings: z.array(z.string()),
+      sources: z.array(
+        z.object({
+          title: z.string(),
+          url: z.string(),
+          relevance: z.string(),
+        })
+      ),
+    }),
   }),
   outputSchema: z.object({
     personaId: z.string(),
@@ -40,7 +50,7 @@ export const generatePersonaStep = createStep({
       topic,
       questionCount,
       interviewFocus,
-      researchContext,
+      researchOutput,
     } = inputData;
 
     const personaAgent = mastra?.getAgent("personaAgent");
@@ -51,7 +61,6 @@ export const generatePersonaStep = createStep({
 
     // Create a comprehensive prompt for persona generation
     console.log("\n\n=== GENERATING PERSONA ===");
-    console.log("Research Context Found:", researchContext ? "YES" : "NO");
 
     let personaPrompt = `Create a detailed persona for: ${personaDescription}
     
@@ -59,20 +68,33 @@ export const generatePersonaStep = createStep({
     Context: ${context}
     `;
 
-    if (researchContext) {
-      console.log("--- Research Data (Snippet) ---");
-      console.log(researchContext + "...");
-      console.log("--------------------------------");
+    if (researchOutput) {
+      console.log(
+        `--- Incorporating ${researchOutput.sources.length} Verified Sources ---`
+      );
+
+      const evidenceDossier = `
+*** EVIDENCE DOSSIER (GROUND TRUTH) ***
+
+SUMMARY:
+${researchOutput.summary}
+
+KEY FINDINGS:
+${researchOutput.top_findings.map((f) => `- ${f}`).join("\n")}
+
+VERIFIED SOURCES:
+${researchOutput.sources.map((s, i) => `${i + 1}. [${s.title}](${s.url}) - ${s.relevance}`).join("\n")}
+      `;
 
       personaPrompt += `
+      ${evidenceDossier}
       
-      *** RESEARCH DATA (GROUND TRUTH) ***
-      Use the following real-world research to ground this persona in reality. 
-      Incorporate specific quotes, pain points, and behavioral patterns found in the research.
-      
-      ${researchContext}
-      
-      *** END RESEARCH DATA ***
+      *** INSTRUCTION ***
+      You must ground the persona in the Evidence Dossier above.
+      - If the research lists specific pain points, USE THEM.
+      - If the research lists specific tools, USE THEM.
+      - Do not invent problems if real ones are provided.
+      *** END INSTRUCTION ***
       `;
     }
 
@@ -83,10 +105,7 @@ export const generatePersonaStep = createStep({
     const response = await personaAgent.generate(personaPrompt);
     console.log("Persona Generated Successfully");
 
-    // Generate a unique ID for this persona
     const personaId = `persona-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-    // Extract a brief summary (first few lines or overview section)
     const personaProfile = response.text;
     const lines = personaProfile.split("\n").filter((line) => line.trim());
     const summaryLines = lines.slice(0, 5).join(" ").substring(0, 200);

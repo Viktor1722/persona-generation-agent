@@ -1,27 +1,20 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 
-// Rate limiter to prevent exceeding Brave API limits
+// Robust Rate Limiter with Retry Logic
 class RateLimiter {
-  private queue: Array<() => void> = [];
+  private queue: Array<{
+    fn: () => Promise<any>;
+    resolve: (value: any) => void;
+    reject: (reason: any) => void;
+  }> = [];
   private isProcessing = false;
   private lastRequestTime = 0;
-  private minDelay: number; // milliseconds between requests
-
-  constructor(requestsPerSecond: number = 1) {
-    this.minDelay = 1000 / requestsPerSecond;
-  }
+  private minDelay = 1100;
 
   async execute<T>(fn: () => Promise<T>): Promise<T> {
     return new Promise((resolve, reject) => {
-      this.queue.push(async () => {
-        try {
-          const result = await fn();
-          resolve(result);
-        } catch (error) {
-          reject(error);
-        }
-      });
+      this.queue.push({ fn, resolve, reject });
       this.processQueue();
     });
   }
@@ -32,30 +25,51 @@ class RateLimiter {
     this.isProcessing = true;
 
     while (this.queue.length > 0) {
+      const item = this.queue[0];
+
       const now = Date.now();
       const timeSinceLastRequest = now - this.lastRequestTime;
 
-      // Wait if we need to respect the rate limit
       if (timeSinceLastRequest < this.minDelay) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, this.minDelay - timeSinceLastRequest)
-        );
+        const waitTime = this.minDelay - timeSinceLastRequest;
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
       }
 
-      const task = this.queue.shift();
-      if (task) {
-        this.lastRequestTime = Date.now();
-        await task();
+      try {
+        const result = await this.executeWithRetry(item.fn);
+        item.resolve(result);
+      } catch (error) {
+        item.reject(error);
       }
+
+      this.lastRequestTime = Date.now();
+      this.queue.shift();
     }
 
     this.isProcessing = false;
   }
+
+  private async executeWithRetry<T>(
+    fn: () => Promise<T>,
+    retries = 3
+  ): Promise<T> {
+    try {
+      return await fn();
+    } catch (error: any) {
+      if (retries > 0 && error.message.includes("429")) {
+        console.log(
+          `Rate limit hit. Retrying in 2 seconds... (${retries} attempts left)`
+        );
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        return this.executeWithRetry(fn, retries - 1);
+      }
+      throw error;
+    }
+  }
 }
 
-// Create a singleton rate limiter (1 request per second for free tier)
-// Adjust to 2-3 for paid tiers
-const rateLimiter = new RateLimiter(1);
+// Singleton instance
+const rateLimiter = new RateLimiter();
 
 interface BraveSearchResult {
   title: string;
@@ -127,7 +141,7 @@ export const braveSearchTool = createTool({
     // Validate count
     const validCount = Math.min(Math.max(count, 1), 20);
 
-    // Use rate limiter to prevent API abuse
+    // Execute through rate limiter
     const searchResults = await rateLimiter.execute(async () => {
       const url = new URL("https://api.search.brave.com/res/v1/web/search");
       url.searchParams.append("q", query);
@@ -149,9 +163,7 @@ export const braveSearchTool = createTool({
 
       if (!response.ok) {
         if (response.status === 429) {
-          throw new Error(
-            "Brave API rate limit exceeded. Please wait before making more requests."
-          );
+          throw new Error("Brave API rate limit exceeded (429).");
         }
         throw new Error(
           `Brave API error: ${response.status} ${response.statusText}`
@@ -164,7 +176,6 @@ export const braveSearchTool = createTool({
     // Process results
     const results: BraveSearchResult[] = [];
 
-    // Add web results
     if (searchResults.web?.results) {
       results.push(
         ...searchResults.web.results.map((result) => ({
@@ -176,7 +187,6 @@ export const braveSearchTool = createTool({
       );
     }
 
-    // Add news results if searching for news
     if (search_type === "news" && searchResults.news?.results) {
       results.push(
         ...searchResults.news.results.map((result) => ({

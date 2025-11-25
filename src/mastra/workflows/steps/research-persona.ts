@@ -20,7 +20,17 @@ export const researchPersonaStep = createStep({
     topic: z.string(),
     questionCount: z.number(),
     interviewFocus: z.string(),
-    researchContext: z.string(),
+    researchOutput: z.object({
+      summary: z.string(),
+      top_findings: z.array(z.string()),
+      sources: z.array(
+        z.object({
+          title: z.string(),
+          url: z.string(),
+          relevance: z.string(),
+        })
+      ),
+    }),
   }),
   execute: async ({ inputData, mastra }) => {
     const {
@@ -38,10 +48,10 @@ export const researchPersonaStep = createStep({
       throw new Error("Research Agent not found");
     }
 
-    console.log("\n\n=== STARTING RESEARCH STEP ===");
+    console.log("\n\n=== STARTING RESEARCH STEP (STRUCTURED) ===");
     console.log(`Topic: ${personaDescription} | Industry: ${industry}`);
 
-    // Generate research prompt
+    // Generate research prompt with structured output request
     const researchPrompt = `
       I need to build a realistic persona for: "${personaDescription}" in the "${industry}" industry.
       Context: ${context}
@@ -51,19 +61,38 @@ export const researchPersonaStep = createStep({
       2. Search for "${personaDescription} pain points reddit" or "site:reddit.com ${personaDescription} complaints" to find authentic frustrations.
       3. Search for "salary range ${personaDescription}" and key responsibilities.
 
-      Synthesize your findings into a "Research Context" that I can feed into a persona generator. 
-      Focus on finding:
-      - Real quotes or specific language used by these people.
-      - Concrete examples of problems they face.
-      - Tools they use.
+      CRITICAL: You must return a JSON object containing:
+      - "summary": A concise overview of the findings.
+      - "top_findings": An array of 5-7 specific insights (quotes, facts, pain points).
+      - "sources": An array of objects, each having "title", "url", and "relevance" (why this source matters).
+
+      Do not wrap in markdown. Return only the JSON ONLY and nothing else you have to be consistent with the output format.
     `;
 
     console.log("Executing Research Agent...");
-    const result = await researchAgent.generate(researchPrompt);
+    const result = await researchAgent.generate(researchPrompt, {
+      output: z.object({
+        summary: z.string(),
+        top_findings: z.array(z.string()),
+        sources: z.array(
+          z.object({
+            title: z.string(),
+            url: z.string(),
+            relevance: z.string(),
+          })
+        ),
+      }),
+    });
+
     console.log(
-      "Research Completed. Found " + result.text.length + " chars of data."
+      "Research Completed. Found " + result.object?.sources.length + " sources."
     );
-    const researchContext = result.text;
+
+    const researchOutput = result.object;
+
+    if (!researchOutput) {
+      throw new Error("Failed to parse research output");
+    }
 
     return {
       personaDescription,
@@ -72,7 +101,7 @@ export const researchPersonaStep = createStep({
       topic,
       questionCount,
       interviewFocus,
-      researchContext,
+      researchOutput,
     };
   },
 });

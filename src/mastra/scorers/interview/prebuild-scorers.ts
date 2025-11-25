@@ -40,7 +40,7 @@ export const faithfulnessScorer = createFaithfulnessScorer({
  */
 export const hallucinationScorer = createHallucinationScorer({
   model: {
-    id: "openai/gpt-4o-mini",
+    id: "openai/gpt-5",
   },
 });
 
