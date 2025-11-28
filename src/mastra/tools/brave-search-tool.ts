@@ -76,6 +76,7 @@ interface BraveSearchResult {
   url: string;
   description: string;
   published_date?: string;
+  relevance: string;
 }
 
 interface BraveWebSearchResponse {
@@ -84,8 +85,8 @@ interface BraveWebSearchResponse {
       title: string;
       url: string;
       description: string;
-      published_date?: string;
       extra_snippets?: string[];
+      relevance: string;
     }>;
   };
   news?: {
@@ -93,7 +94,7 @@ interface BraveWebSearchResponse {
       title: string;
       url: string;
       description: string;
-      published_date?: string;
+      relevance: string;
     }>;
   };
 }
@@ -123,7 +124,7 @@ export const braveSearchTool = createTool({
         title: z.string(),
         url: z.string(),
         description: z.string(),
-        published_date: z.string().optional(),
+        relevance: z.string(),
       })
     ),
     query: z.string(),
@@ -182,7 +183,7 @@ export const braveSearchTool = createTool({
           title: result.title,
           url: result.url,
           description: result.description,
-          published_date: result.published_date,
+          relevance: result.relevance,
         }))
       );
     }
@@ -193,7 +194,7 @@ export const braveSearchTool = createTool({
           title: result.title,
           url: result.url,
           description: result.description,
-          published_date: result.published_date,
+          relevance: result.relevance,
         }))
       );
     }

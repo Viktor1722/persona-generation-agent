@@ -27,11 +27,44 @@ export const generatePersonaStep = createStep({
   outputSchema: z.object({
     personaId: z.string(),
     personaProfile: z.string(),
-    personaSummary: z.string(),
     topic: z.string(),
     questionCount: z.number(),
     interviewFocus: z.string(),
     industry: z.string(),
+    personaDescription: z.string(),
+    context: z.string(),
+    researchOutput: z.object({
+      summary: z.string(),
+      top_findings: z.array(z.string()),
+      sources: z.array(
+        z.object({
+          title: z.string(),
+          url: z.string(),
+          relevance: z.string(),
+        })
+      ),
+    }),
+
+    // Quality score from scorer
+    qualityScore: z.number(),
+    scorerFeedback: z.object({
+      score: z.number(),
+      completeness: z.object({
+        score: z.number(),
+        reasoning: z.string(),
+        missingElements: z.array(z.string()),
+      }),
+      suitability: z.object({
+        score: z.number(),
+        reasoning: z.string(),
+        misalignments: z.array(z.string()),
+      }),
+      specificity: z.object({
+        score: z.number(),
+        reasoning: z.string(),
+        vagueAreas: z.array(z.string()),
+      }),
+    }),
   }),
   scorers: {
     personaQuality: {
@@ -42,6 +75,7 @@ export const generatePersonaStep = createStep({
       },
     },
   },
+  // Scorer is run manually in execute() to include results in output for branching
   execute: async ({ inputData, mastra }) => {
     const {
       personaDescription,
@@ -68,36 +102,6 @@ export const generatePersonaStep = createStep({
     Context: ${context}
     `;
 
-    if (researchOutput) {
-      console.log(
-        `--- Incorporating ${researchOutput.sources.length} Verified Sources ---`
-      );
-
-      const evidenceDossier = `
-*** EVIDENCE DOSSIER (GROUND TRUTH) ***
-
-SUMMARY:
-${researchOutput.summary}
-
-KEY FINDINGS:
-${researchOutput.top_findings.map((f) => `- ${f}`).join("\n")}
-
-VERIFIED SOURCES:
-${researchOutput.sources.map((s, i) => `${i + 1}. [${s.title}](${s.url}) - ${s.relevance}`).join("\n")}
-      `;
-
-      personaPrompt += `
-      ${evidenceDossier}
-      
-      *** INSTRUCTION ***
-      You must ground the persona in the Evidence Dossier above.
-      - If the research lists specific pain points, USE THEM.
-      - If the research lists specific tools, USE THEM.
-      - Do not invent problems if real ones are provided.
-      *** END INSTRUCTION ***
-      `;
-    }
-
     personaPrompt += `
     Generate a complete persona profile following all guidelines. Ensure the voice and frustrations match the research provided.`;
 
@@ -107,18 +111,51 @@ ${researchOutput.sources.map((s, i) => `${i + 1}. [${s.title}](${s.url}) - ${s.r
 
     const personaId = `persona-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const personaProfile = response.text;
-    const lines = personaProfile.split("\n").filter((line) => line.trim());
-    const summaryLines = lines.slice(0, 5).join(" ").substring(0, 200);
-    const personaSummary = summaryLines + "...";
+
+    // Run the quality scorer immediately to get the score for branching
+    console.log("\n=== EVALUATING PERSONA QUALITY ===");
+    const scorerResult = await personaQualityScorer.run({
+      input: {
+        industry,
+        context,
+        personaDescription,
+        interviewFocus,
+        topic,
+      },
+      output: {
+        personaProfile,
+      },
+    });
+
+    const qualityScore = scorerResult.score;
+    const analysis = scorerResult.analyzeStepResult;
+
+    if (!analysis) {
+      throw new Error("Scorer did not return analysis results");
+    }
+
+    console.log(`Quality Score: ${qualityScore.toFixed(2)}`);
+    console.log(`  Completeness: ${analysis.completeness.score.toFixed(2)}`);
+    console.log(`  Suitability: ${analysis.suitability.score.toFixed(2)}`);
+    console.log(`  Specificity: ${analysis.specificity.score.toFixed(2)}`);
 
     return {
       personaId,
       personaProfile,
-      personaSummary,
       topic,
       questionCount,
       interviewFocus,
       industry,
+      personaDescription,
+      context,
+      researchOutput,
+      qualityScore,
+      scorerFeedback: {
+        score: qualityScore,
+        completeness: analysis.completeness,
+        suitability: analysis.suitability,
+        specificity: analysis.specificity,
+      },
     };
   },
 });

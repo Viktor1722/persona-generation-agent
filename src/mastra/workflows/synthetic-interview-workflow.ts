@@ -1,8 +1,12 @@
 import { createWorkflow } from "@mastra/core/workflows";
 import { z } from "zod";
-import { researchPersonaStep } from "./steps/research-persona";
+import { researchStep } from "./steps/research-step";
 import { reviewResearchStep } from "./steps/review-research";
 import { generatePersonaStep } from "./steps/generate-persona";
+import { checkPersonaScoreStep } from "./steps/check-persona-score";
+import { refinePersonaStep } from "./steps/refine-persona";
+import { useOriginalPersonaStep } from "./steps/use-original-persona";
+import { prepareForQuestionsStep } from "./steps/prepare-for-questions";
 import { generateQuestionsStep } from "./steps/generate-questions";
 import { conductInterviewStep } from "./steps/conduct-interview";
 import { formatResultsStep } from "./steps/format-results";
@@ -53,12 +57,30 @@ export const syntheticInterviewWorkflow = createWorkflow({
       industry: z.string(),
       questionCount: z.number(),
       conductedAt: z.string(),
+      personaRefined: z.boolean(),
+      originalScore: z.number().nullable().default(null),
+      finalScore: z.number().nullable().default(null),
+      improvementNotes: z.string().nullable().default(null),
     }),
   }),
 })
-  .then(researchPersonaStep)
+  .then(researchStep)
   .then(reviewResearchStep)
   .then(generatePersonaStep)
+  .then(checkPersonaScoreStep)
+  .branch([
+    // Branch 1: Persona needs refinement (score < 0.95)
+    [
+      async ({ inputData }) => inputData.needsRefinement === true,
+      refinePersonaStep,
+    ],
+    // Branch 2: Persona is good enough (score >= 0.95)
+    [
+      async ({ inputData }) => inputData.needsRefinement === false,
+      useOriginalPersonaStep,
+    ],
+  ])
+  .then(prepareForQuestionsStep)
   .then(generateQuestionsStep)
   .then(conductInterviewStep)
   .then(formatResultsStep)

@@ -1,12 +1,6 @@
 import { z } from "zod";
 import { createScorer } from "@mastra/core/scores";
 
-// ============================================================================
-// PERSONA QUALITY SCORER
-// ============================================================================
-// Evaluates the quality, completeness, and relevance of generated personas
-// Applied to: generate-persona step
-
 export const personaQualityScorer = createScorer({
   name: "Persona Quality",
   description:

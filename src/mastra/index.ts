@@ -16,15 +16,22 @@ export const mastra = new Mastra({
     multiInterviewConsistencyScorer,
   },
   storage: new LibSQLStore({
-    // stores observability, scores, ... into memory storage, if it needs to persist, change to file:../mastra.db
-    url: ":memory:",
+    url: "file:mastra.db",
   }),
+
   logger: new PinoLogger({
     name: "Mastra",
     level: "info",
   }),
+
+  // AI Tracing configuration for debugging
+  observability: {
+    default: {
+      enabled: true,
+    },
+  },
+
   telemetry: {
-    // Telemetry is deprecated and will be removed in the Nov 4th release
     enabled: false,
   },
 });
