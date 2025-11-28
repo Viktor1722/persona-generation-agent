@@ -9,7 +9,6 @@ export const refinePersonaStep = createStep({
   inputSchema: z.object({
     personaId: z.string(),
     personaProfile: z.string(),
-    personaSummary: z.string(),
     topic: z.string(),
     questionCount: z.number(),
     interviewFocus: z.string(),
@@ -53,7 +52,7 @@ export const refinePersonaStep = createStep({
   outputSchema: z.object({
     personaId: z.string(),
     personaProfile: z.string(),
-    personaSummary: z.string(),
+    personaDescription: z.string(),
     topic: z.string(),
     questionCount: z.number(),
     interviewFocus: z.string(),
@@ -67,11 +66,11 @@ export const refinePersonaStep = createStep({
     const {
       personaId,
       personaProfile,
+      personaDescription,
       topic,
       questionCount,
       interviewFocus,
       industry,
-      personaDescription,
       context,
       scorerFeedback,
       researchOutput,
@@ -149,11 +148,6 @@ Generate the COMPLETE refined persona following all guidelines. Make it perfect 
     console.log("Refined Persona Generated Successfully");
 
     const refinedPersonaProfile = response.text;
-    const lines = refinedPersonaProfile
-      .split("\n")
-      .filter((line) => line.trim());
-    const summaryLines = lines.slice(0, 5).join(" ").substring(0, 200);
-    const refinedPersonaSummary = summaryLines + "...";
 
     // Re-score the refined persona to verify improvement
     console.log("\n=== EVALUATING REFINED PERSONA QUALITY ===");
@@ -202,7 +196,7 @@ Original score: ${qualityScore.toFixed(2)} → Refined score: ${refinedScore.toF
     return {
       personaId,
       personaProfile: refinedPersonaProfile,
-      personaSummary: refinedPersonaSummary,
+      personaDescription,
       topic,
       questionCount,
       interviewFocus,

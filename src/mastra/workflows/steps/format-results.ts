@@ -7,7 +7,7 @@ export const formatResultsStep = createStep({
     "Format the interview results with metadata and persona refinement info",
   inputSchema: z.object({
     personaId: z.string(),
-    personaSummary: z.string(),
+    personaProfile: z.string(),
     transcript: z.array(
       z.object({
         question: z.string(),
@@ -20,7 +20,7 @@ export const formatResultsStep = createStep({
   }),
   outputSchema: z.object({
     personaId: z.string(),
-    personaSummary: z.string(),
+    personaProfile: z.string(),
     interviewId: z.string(),
     transcript: z.array(
       z.object({
@@ -42,7 +42,7 @@ export const formatResultsStep = createStep({
   execute: async ({ inputData, getStepResult }) => {
     const {
       personaId,
-      personaSummary,
+      personaProfile,
       transcript,
       topic,
       industry,
@@ -90,7 +90,7 @@ export const formatResultsStep = createStep({
 
     return {
       personaId,
-      personaSummary,
+      personaProfile,
       interviewId,
       transcript,
       metadata: {

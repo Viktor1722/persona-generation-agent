@@ -104,7 +104,7 @@ export const researchStep = createStep({
     try {
       // Generate with the research agent - maxSteps goes here, not in the schema
       const result = await researchAgent.generate(researchPrompt, {
-        maxSteps: 15, // Allow enough steps for multiple tool calls
+        maxSteps: 20, // Allow enough steps for multiple tool calls
         output: ResearchReportSchema,
       });
 
@@ -115,7 +115,7 @@ export const researchStep = createStep({
         {
           stepName: "research-persona",
           agentName: "researchAgent",
-          maxSteps: 15,
+          maxSteps: 20,
         }
       );
 

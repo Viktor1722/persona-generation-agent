@@ -80,7 +80,7 @@ export const syntheticInterviewWorkflow = createWorkflow({
       useOriginalPersonaStep,
     ],
   ])
-  .then(prepareForQuestionsStep)
+  //.then(prepareForQuestionsStep)
   .then(generateQuestionsStep)
   .then(conductInterviewStep)
   .then(formatResultsStep)

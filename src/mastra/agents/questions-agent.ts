@@ -30,7 +30,8 @@ export const questionsAgent = new Agent({
     - "How much time/money do you spend on [activity]?"
     - "Walk me through the last time you [did this task]"
 
-    Structure the question in a structure and numbered list. Do not include any other text or formatting.
+    When generating questions, provide them as an array of strings. Each question should be clear, 
+    specific, and follow The Mom Test principles.
 
     If the user requests to add more questions to the list, regenerate the entire list with the new questions 
     fully incorporated. Maintain all existing questions while seamlessly integrating the new additions into the appropriate sections. 

@@ -2,6 +2,12 @@ import { createStep } from "@mastra/core/workflows";
 import { z } from "zod";
 import { problemSpecificityScorer } from "../../scorers/interview";
 
+const QuestionsOutputSchema = z.object({
+  questions: z
+    .array(z.string())
+    .describe("Array of Mom Test interview questions"),
+});
+
 export const generateQuestionsStep = createStep({
   id: "generate-questions",
   description: "Generate Mom Test interview questions",
@@ -49,51 +55,24 @@ export const generateQuestionsStep = createStep({
       throw new Error("Questions Agent not found");
     }
 
-    const questionsPrompt = `Generate ${questionCount} Mom Test interview questions for:
+    const questionsPrompt = `Generate exactly ${questionCount} Mom Test interview questions for:
 
-Topic: ${topic}
-Industry: ${industry}
-Focus: ${interviewFocus}
+        Topic: ${topic}
+        Industry: ${industry}
+        Focus: ${interviewFocus}
 
-Create questions that follow The Mom Test principles - focus on past behaviors, real experiences, and specific examples. Do not ask hypothetical or leading questions.`;
+        Create questions that follow The Mom Test principles - focus on past behaviors, real experiences, and specific examples. Do not ask hypothetical or leading questions.
 
-    const response = await questionsAgent.generate(questionsPrompt);
+        Generate EXACTLY ${questionCount} questions.`;
 
-    // Parse the numbered list of questions
-    const questionText = response.text;
-    const lines = questionText.split("\n").filter((line) => line.trim());
+    const response = await questionsAgent.generate(questionsPrompt, {
+      output: QuestionsOutputSchema,
+    });
 
-    // Extract questions (lines that start with numbers or bullets)
-    const questions = lines
-      .filter((line) => {
-        const trimmed = line.trim();
-        return /^\d+[\.)]\s/.test(trimmed) || /^[-*]\s/.test(trimmed);
-      })
-      .map((line) => {
-        // Remove numbering/bullets
-        return line
-          .trim()
-          .replace(/^\d+[\.)]\s*/, "")
-          .replace(/^[-*]\s*/, "")
-          .trim();
-      })
-      .filter((q) => q.length > 0);
+    const questions = response.object?.questions || [];
 
-    // If parsing failed, split by newlines and take non-empty lines
     if (questions.length === 0) {
-      const fallbackQuestions = lines
-        .filter((line) => line.trim().length > 20 && line.includes("?"))
-        .slice(0, questionCount);
-
-      return {
-        personaId,
-        personaProfile,
-        personaSummary,
-        questions: fallbackQuestions,
-        topic,
-        questionCount,
-        industry,
-      };
+      throw new Error("Questions agent did not return any questions");
     }
 
     return {
