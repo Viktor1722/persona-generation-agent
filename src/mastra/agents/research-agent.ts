@@ -37,7 +37,7 @@ SEARCH STRATEGY:
 
 Use the braveSearchTool multiple times with targeted queries to gather comprehensive data across all objectives. But try to not hit the limit of 20 steps.
   `,
-  model: "openai/gpt-5",
+  model: "openai/gpt-4o-mini",
   tools: {
     braveSearchTool,
   },

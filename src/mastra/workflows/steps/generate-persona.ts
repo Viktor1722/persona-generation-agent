@@ -24,6 +24,7 @@ export const generatePersonaStep = createStep({
       ),
     }),
   }),
+
   outputSchema: z.object({
     personaId: z.string(),
     personaProfile: z.string(),
@@ -45,7 +46,6 @@ export const generatePersonaStep = createStep({
       ),
     }),
 
-    // Quality score from scorer
     qualityScore: z.number(),
     scorerFeedback: z.object({
       score: z.number(),
@@ -75,7 +75,7 @@ export const generatePersonaStep = createStep({
       },
     },
   },
-  // Scorer is run manually in execute() to include results in output for branching
+
   execute: async ({ inputData, mastra }) => {
     const {
       personaDescription,
@@ -93,9 +93,6 @@ export const generatePersonaStep = createStep({
       throw new Error("Persona Agent not found");
     }
 
-    // Create a comprehensive prompt for persona generation
-    console.log("\n\n=== GENERATING PERSONA ===");
-
     let personaPrompt = `Create a detailed persona for: ${personaDescription}
     
     Industry: ${industry}
@@ -105,15 +102,10 @@ export const generatePersonaStep = createStep({
     personaPrompt += `
     Generate a complete persona profile following all guidelines. Ensure the voice and frustrations match the research provided.`;
 
-    console.log("Sending prompt to Persona Agent...");
     const response = await personaAgent.generate(personaPrompt);
-    console.log("Persona Generated Successfully");
-
     const personaId = `persona-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const personaProfile = response.text;
 
-    // Run the quality scorer immediately to get the score for branching
-    console.log("\n=== EVALUATING PERSONA QUALITY ===");
     const scorerResult = await personaQualityScorer.run({
       input: {
         industry,

@@ -2,6 +2,12 @@ import { createStep } from "@mastra/core/workflows";
 import { z } from "zod";
 import { problemSpecificityScorer } from "../../scorers/interview";
 
+const QuestionsOutputSchema = z.object({
+  questions: z
+    .array(z.string())
+    .describe("Array of Mom Test interview questions"),
+});
+
 export const generateQuestionsStep = createStep({
   id: "generate-questions",
   description: "Generate Mom Test interview questions",
@@ -55,50 +61,19 @@ export const generateQuestionsStep = createStep({
       Topic: ${topic}
       Industry: ${industry}
       Focus: ${interviewFocus}
+      Persona Description: ${personaDescription}
+      Context: ${context}
 
       Create questions that follow The Mom Test principles - focus on past behaviors, real experiences, and specific examples. Do not ask hypothetical or leading questions.`;
 
-    const response = await questionsAgent.generate(questionsPrompt);
+    const response = await questionsAgent.generate(questionsPrompt, {
+      output: QuestionsOutputSchema,
+    });
 
-    // Parse the numbered list of questions
-    const questionText = response.text;
+    const questions = response.object?.questions || [];
 
-    const lines = questionText.split("\n").filter((line) => line.trim());
-
-    // Extract questions (lines that start with numbers or bullets)
-    const questions = lines
-      .filter((line) => {
-        const trimmed = line.trim();
-        return /^\d+[\.)]\s/.test(trimmed) || /^[-*]\s/.test(trimmed);
-      })
-      .map((line) => {
-        // Remove numbering/bullets
-        return line
-          .trim()
-          .replace(/^\d+[\.)]\s*/, "")
-          .replace(/^[-*]\s*/, "")
-          .trim();
-      })
-      .filter((q) => q.length > 0);
-
-    // If parsing failed, split by newlines and take non-empty lines
     if (questions.length === 0) {
-      console.log("\n⚠️  Primary parsing failed, using fallback");
-      const fallbackQuestions = lines
-        .filter((line) => line.trim().length > 20 && line.includes("?"))
-        .slice(0, questionCount);
-
-      console.log("Fallback parsed questions:", fallbackQuestions.length);
-      console.log(fallbackQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n"));
-
-      return {
-        personaId,
-        personaProfile,
-        questions: fallbackQuestions,
-        topic,
-        questionCount,
-        industry,
-      };
+      throw new Error("No questions generated");
     }
 
     return {

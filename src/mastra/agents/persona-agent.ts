@@ -73,10 +73,10 @@ Keep it under 500 words total. Make every detail count.
 - If the user requests to remove information from an existing persona (e.g., remove a pain point, remove a goal, remove a behavioral detail), regenerate the entire persona with the changes removed and ensure the persona remains coherent.
 
 `,
-  model: "openai/gpt-5-mini",
+  model: "openai/gpt-4o-mini",
   memory: new Memory({
     storage: new LibSQLStore({
-      url: "file:../mastra.db", // path is relative to the .mastra/output directory
+      url: "file:../mastra.db",
     }),
   }),
   scorers: {
