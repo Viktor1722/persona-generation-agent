@@ -28,39 +28,34 @@ export const refinePersonaStep = createStep({
     }),
     needsRefinement: z.boolean(),
     qualityScore: z.number(),
-    scorerFeedback: z
-      .object({
+    scorerFeedback: z.object({
+      score: z.number(),
+      completeness: z.object({
         score: z.number(),
-        completeness: z.object({
-          score: z.number(),
-          reasoning: z.string(),
-          missingElements: z.array(z.string()),
-        }),
-        suitability: z.object({
-          score: z.number(),
-          reasoning: z.string(),
-          misalignments: z.array(z.string()),
-        }),
-        specificity: z.object({
-          score: z.number(),
-          reasoning: z.string(),
-          vagueAreas: z.array(z.string()),
-        }),
-      })
-      .optional(),
+        reasoning: z.string(),
+        missingElements: z.array(z.string()),
+      }),
+      suitability: z.object({
+        score: z.number(),
+        reasoning: z.string(),
+        misalignments: z.array(z.string()),
+      }),
+      specificity: z.object({
+        score: z.number(),
+        reasoning: z.string(),
+        vagueAreas: z.array(z.string()),
+      }),
+    }),
   }),
   outputSchema: z.object({
     personaId: z.string(),
     personaProfile: z.string(),
     personaDescription: z.string(),
+    context: z.string(),
     topic: z.string(),
     questionCount: z.number(),
     interviewFocus: z.string(),
     industry: z.string(),
-    originalPersona: z.string(),
-    originalScore: z.number(),
-    refinedScore: z.number(),
-    improvementNotes: z.string(),
   }),
   execute: async ({ inputData, mastra }) => {
     const {
@@ -143,10 +138,7 @@ ${researchOutput.sources.map((s, i) => `${i + 1}. [${s.title}](${s.url}) - ${s.r
 
 Generate the COMPLETE refined persona following all guidelines. Make it perfect for the interview purpose.`;
 
-    console.log("Sending refinement prompt to Persona Agent...");
     const response = await personaAgent.generate(improvementPrompt);
-    console.log("Refined Persona Generated Successfully");
-
     const refinedPersonaProfile = response.text;
 
     // Re-score the refined persona to verify improvement
@@ -193,18 +185,27 @@ Generate the COMPLETE refined persona following all guidelines. Make it perfect 
 - Specificity gaps: ${scorerFeedback.specificity.vagueAreas.join(", ") || "None"}
 Original score: ${qualityScore.toFixed(2)} → Refined score: ${refinedScore.toFixed(2)}`;
 
-    return {
+    const output = {
       personaId,
       personaProfile: refinedPersonaProfile,
       personaDescription,
+      context,
       topic,
       questionCount,
       interviewFocus,
       industry,
-      originalPersona: personaProfile,
-      originalScore: qualityScore,
-      refinedScore: refinedScore,
-      improvementNotes,
     };
+
+    console.log("\n=== REFINE PERSONA STEP - OUTPUT DATA ===");
+    console.log("Output Keys:", Object.keys(output));
+    console.log("PersonaId:", output.personaId);
+    console.log("PersonaDescription:", output.personaDescription);
+    console.log("Context:", output.context);
+    console.log("Topic:", output.topic);
+    console.log("Industry:", output.industry);
+    console.log("InterviewFocus:", output.interviewFocus);
+    console.log("QuestionCount:", output.questionCount);
+
+    return output;
   },
 });

@@ -35,7 +35,7 @@ SEARCH STRATEGY:
 - Cross-reference multiple sources to validate findings
 - Go deep into real-world usage and behaviors
 
-Use the braveSearchTool multiple times with targeted queries to gather comprehensive data across all objectives.
+Use the braveSearchTool multiple times with targeted queries to gather comprehensive data across all objectives. But try to not hit the limit of 20 steps.
   `,
   model: "openai/gpt-5",
   tools: {

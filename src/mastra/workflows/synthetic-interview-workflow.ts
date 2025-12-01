@@ -44,7 +44,8 @@ export const syntheticInterviewWorkflow = createWorkflow({
   }),
   outputSchema: z.object({
     personaId: z.string(),
-    personaSummary: z.string(),
+    personaDescription: z.string(),
+    personaProfile: z.string(),
     interviewId: z.string(),
     transcript: z.array(
       z.object({
@@ -69,18 +70,18 @@ export const syntheticInterviewWorkflow = createWorkflow({
   .then(generatePersonaStep)
   .then(checkPersonaScoreStep)
   .branch([
-    // Branch 1: Persona needs refinement (score < 0.95)
+    // Branch 1: Persona needs refinement (score < 0.7)
     [
       async ({ inputData }) => inputData.needsRefinement === true,
       refinePersonaStep,
     ],
-    // Branch 2: Persona is good enough (score >= 0.95)
+    // Branch 2: Persona is good enough (score >= 0.7)
     [
       async ({ inputData }) => inputData.needsRefinement === false,
       useOriginalPersonaStep,
     ],
   ])
-  //.then(prepareForQuestionsStep)
+  .then(prepareForQuestionsStep)
   .then(generateQuestionsStep)
   .then(conductInterviewStep)
   .then(formatResultsStep)

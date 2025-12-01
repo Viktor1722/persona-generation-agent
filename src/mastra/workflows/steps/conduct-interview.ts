@@ -11,7 +11,6 @@ export const conductInterviewStep = createStep({
   inputSchema: z.object({
     personaId: z.string(),
     personaProfile: z.string(),
-    personaSummary: z.string(),
     questions: z.array(z.string()),
     topic: z.string(),
     questionCount: z.number(),
@@ -19,7 +18,6 @@ export const conductInterviewStep = createStep({
   }),
   outputSchema: z.object({
     personaId: z.string(),
-    personaSummary: z.string(),
     transcript: z.array(
       z.object({
         question: z.string(),
@@ -51,7 +49,6 @@ export const conductInterviewStep = createStep({
       personaProfile,
       questions,
       personaId,
-      personaSummary,
       topic,
       questionCount,
       industry,
@@ -89,7 +86,6 @@ export const conductInterviewStep = createStep({
 
     return {
       personaId,
-      personaSummary,
       transcript,
       topic,
       questionCount,

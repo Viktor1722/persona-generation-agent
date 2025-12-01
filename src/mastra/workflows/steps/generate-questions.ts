@@ -2,19 +2,14 @@ import { createStep } from "@mastra/core/workflows";
 import { z } from "zod";
 import { problemSpecificityScorer } from "../../scorers/interview";
 
-const QuestionsOutputSchema = z.object({
-  questions: z
-    .array(z.string())
-    .describe("Array of Mom Test interview questions"),
-});
-
 export const generateQuestionsStep = createStep({
   id: "generate-questions",
   description: "Generate Mom Test interview questions",
   inputSchema: z.object({
     personaId: z.string(),
     personaProfile: z.string(),
-    personaSummary: z.string(),
+    personaDescription: z.string(),
+    context: z.string(),
     topic: z.string(),
     questionCount: z.number(),
     interviewFocus: z.string(),
@@ -23,7 +18,6 @@ export const generateQuestionsStep = createStep({
   outputSchema: z.object({
     personaId: z.string(),
     personaProfile: z.string(),
-    personaSummary: z.string(),
     questions: z.array(z.string()),
     topic: z.string(),
     questionCount: z.number(),
@@ -46,7 +40,8 @@ export const generateQuestionsStep = createStep({
       industry,
       personaId,
       personaProfile,
-      personaSummary,
+      personaDescription,
+      context,
     } = inputData;
 
     const questionsAgent = mastra?.getAgent("questionsAgent");
@@ -55,30 +50,60 @@ export const generateQuestionsStep = createStep({
       throw new Error("Questions Agent not found");
     }
 
-    const questionsPrompt = `Generate exactly ${questionCount} Mom Test interview questions for:
+    const questionsPrompt = `Generate ${questionCount} Mom Test interview questions for:
 
-        Topic: ${topic}
-        Industry: ${industry}
-        Focus: ${interviewFocus}
+      Topic: ${topic}
+      Industry: ${industry}
+      Focus: ${interviewFocus}
 
-        Create questions that follow The Mom Test principles - focus on past behaviors, real experiences, and specific examples. Do not ask hypothetical or leading questions.
+      Create questions that follow The Mom Test principles - focus on past behaviors, real experiences, and specific examples. Do not ask hypothetical or leading questions.`;
 
-        Generate EXACTLY ${questionCount} questions.`;
+    const response = await questionsAgent.generate(questionsPrompt);
 
-    const response = await questionsAgent.generate(questionsPrompt, {
-      output: QuestionsOutputSchema,
-    });
+    // Parse the numbered list of questions
+    const questionText = response.text;
 
-    const questions = response.object?.questions || [];
+    const lines = questionText.split("\n").filter((line) => line.trim());
 
+    // Extract questions (lines that start with numbers or bullets)
+    const questions = lines
+      .filter((line) => {
+        const trimmed = line.trim();
+        return /^\d+[\.)]\s/.test(trimmed) || /^[-*]\s/.test(trimmed);
+      })
+      .map((line) => {
+        // Remove numbering/bullets
+        return line
+          .trim()
+          .replace(/^\d+[\.)]\s*/, "")
+          .replace(/^[-*]\s*/, "")
+          .trim();
+      })
+      .filter((q) => q.length > 0);
+
+    // If parsing failed, split by newlines and take non-empty lines
     if (questions.length === 0) {
-      throw new Error("Questions agent did not return any questions");
+      console.log("\n⚠️  Primary parsing failed, using fallback");
+      const fallbackQuestions = lines
+        .filter((line) => line.trim().length > 20 && line.includes("?"))
+        .slice(0, questionCount);
+
+      console.log("Fallback parsed questions:", fallbackQuestions.length);
+      console.log(fallbackQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n"));
+
+      return {
+        personaId,
+        personaProfile,
+        questions: fallbackQuestions,
+        topic,
+        questionCount,
+        industry,
+      };
     }
 
     return {
       personaId,
       personaProfile,
-      personaSummary,
       questions: questions.slice(0, questionCount),
       topic,
       questionCount,

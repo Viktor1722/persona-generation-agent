@@ -48,13 +48,12 @@ export const checkPersonaScoreStep = createStep({
   outputSchema: z.object({
     personaId: z.string(),
     personaProfile: z.string(),
-
+    personaDescription: z.string(),
+    context: z.string(),
     topic: z.string(),
     questionCount: z.number(),
     interviewFocus: z.string(),
     industry: z.string(),
-    personaDescription: z.string(),
-    context: z.string(),
     researchOutput: z.object({
       summary: z.string(),
       top_findings: z.array(z.string()),
