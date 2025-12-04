@@ -110,7 +110,7 @@ export const researchStep = createStep({
         {
           stepName: "research-persona",
           agentName: "researchAgent",
-          maxSteps: 20,
+          maxSteps: 25,
         }
       );
 
