@@ -72,7 +72,6 @@ export const researchStep = createStep({
       throw new Error("Research Agent not found");
     }
 
-    // Add custom metadata to trace
     tracingContext.currentSpan?.update({
       metadata: {
         personaDescription,
@@ -81,7 +80,6 @@ export const researchStep = createStep({
       },
     });
 
-    // Generate research prompt with structured output request
     const researchPrompt = `
         Research a realistic persona: "${personaDescription}" in the "${industry}" industry.
 
@@ -102,14 +100,11 @@ export const researchStep = createStep({
     `;
 
     try {
-      // Generate with the research agent - maxSteps goes here, not in the schema
       const result = await researchAgent.generate(researchPrompt, {
-        maxSteps: 25, // Allow enough steps for multiple tool calls
+        maxSteps: 25,
         output: ResearchReportSchema,
       });
 
-      // Debug and validate that object exists
-      // This logs comprehensive diagnostics and validates the object is present
       const rawObject = debugAndValidateAgentResult(
         result as AgentGenerateResult<z.infer<typeof ResearchReportSchema>>,
         {
@@ -119,8 +114,6 @@ export const researchStep = createStep({
         }
       );
 
-      // Validate against schema with detailed error logging
-      // This ensures the structure matches what we expect
       const researchOutput = validateAgentSchema(
         rawObject,
         ResearchReportSchema,
@@ -130,7 +123,6 @@ export const researchStep = createStep({
         }
       );
 
-      // Add research results to trace metadata
       tracingContext.currentSpan?.update({
         metadata: {
           sourcesFound: researchOutput.sources?.length || 0,
@@ -143,7 +135,6 @@ export const researchStep = createStep({
         `✅ Research completed successfully. Found ${researchOutput.sources.length} sources, ${researchOutput.top_findings.length} findings.`
       );
 
-      // Return the expected output format (matches outputSchema)
       return {
         personaDescription,
         industry,
@@ -156,7 +147,6 @@ export const researchStep = createStep({
     } catch (error: any) {
       logger?.error("❌ Error during research execution:", error);
 
-      // Add error to trace
       tracingContext.currentSpan?.update({
         metadata: {
           error: error.message,
