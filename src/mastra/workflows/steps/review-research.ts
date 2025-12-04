@@ -55,30 +55,28 @@ export const reviewResearchStep = createStep({
       researchOutput,
     } = inputData;
 
-    console.log("\n\n=== REVIEW STEP ===");
-
     // Define report path
     const reportPath = path.join(process.cwd(), "research-report.md");
 
     const reportContent = `
-# Research Report: ${personaDescription}
-**Industry:** ${industry}
-**Date:** ${new Date().toISOString()}
+        # Research Report: ${personaDescription}
+        **Industry:** ${industry}
+        **Date:** ${new Date().toISOString()}
 
----
+        ---
 
-## Executive Summary
-${researchOutput.summary}
+        ## Executive Summary
+        ${researchOutput.summary}
 
-## Top Findings
-${researchOutput.top_findings.map((f) => `- ${f}`).join("\n")}
+        ## Top Findings
+        ${researchOutput.top_findings.map((f) => `- ${f}`).join("\n")}
 
-## Validated Sources
-${researchOutput.sources.map((s) => `- [${s.title}](${s.url})\n  *Relevance: ${s.relevance}*`).join("\n")}
+        ## Validated Sources
+        ${researchOutput.sources.map((s) => `- [${s.title}](${s.url})\n  *Relevance: ${s.relevance}*`).join("\n")}
 
----
-*End of Report*
-    `.trim();
+        ---
+        *End of Report*
+            `.trim();
 
     // Write file to disk
     await fs.writeFile(reportPath, reportContent, "utf-8");

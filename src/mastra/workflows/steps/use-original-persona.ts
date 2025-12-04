@@ -26,24 +26,26 @@ export const useOriginalPersonaStep = createStep({
     }),
     needsRefinement: z.boolean(),
     qualityScore: z.number(),
-    scorerFeedback: z.object({
-      score: z.number(),
-      completeness: z.object({
+    scorerFeedback: z
+      .object({
         score: z.number(),
-        reasoning: z.string(),
-        missingElements: z.array(z.string()),
-      }),
-      suitability: z.object({
-        score: z.number(),
-        reasoning: z.string(),
-        misalignments: z.array(z.string()),
-      }),
-      specificity: z.object({
-        score: z.number(),
-        reasoning: z.string(),
-        vagueAreas: z.array(z.string()),
-      }),
-    }),
+        completeness: z.object({
+          score: z.number(),
+          reasoning: z.string(),
+          missingElements: z.array(z.string()),
+        }),
+        suitability: z.object({
+          score: z.number(),
+          reasoning: z.string(),
+          misalignments: z.array(z.string()),
+        }),
+        specificity: z.object({
+          score: z.number(),
+          reasoning: z.string(),
+          vagueAreas: z.array(z.string()),
+        }),
+      })
+      .optional(),
   }),
   outputSchema: z.object({
     personaId: z.string(),

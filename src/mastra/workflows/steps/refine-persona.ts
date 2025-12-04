@@ -57,6 +57,15 @@ export const refinePersonaStep = createStep({
     interviewFocus: z.string(),
     industry: z.string(),
   }),
+  scorers: {
+    personaQuality: {
+      scorer: personaQualityScorer,
+      sampling: {
+        type: "ratio",
+        rate: 1,
+      },
+    },
+  },
   execute: async ({ inputData, mastra }) => {
     const {
       personaId,
@@ -179,11 +188,11 @@ Generate the COMPLETE refined persona following all guidelines. Make it perfect 
     );
 
     // Create improvement notes
-    const improvementNotes = `Persona refined to address:
-- Completeness issues: ${scorerFeedback.completeness.missingElements.join(", ") || "None"}
-- Suitability concerns: ${scorerFeedback.suitability.misalignments.join(", ") || "None"}
-- Specificity gaps: ${scorerFeedback.specificity.vagueAreas.join(", ") || "None"}
-Original score: ${qualityScore.toFixed(2)} → Refined score: ${refinedScore.toFixed(2)}`;
+    //     const improvementNotes = `Persona refined to address:
+    // - Completeness issues: ${scorerFeedback.completeness.missingElements.join(", ") || "None"}
+    // - Suitability concerns: ${scorerFeedback.suitability.misalignments.join(", ") || "None"}
+    // - Specificity gaps: ${scorerFeedback.specificity.vagueAreas.join(", ") || "None"}
+    // Original score: ${qualityScore.toFixed(2)} → Refined score: ${refinedScore.toFixed(2)}`;
 
     const output = {
       personaId,
@@ -195,16 +204,6 @@ Original score: ${qualityScore.toFixed(2)} → Refined score: ${refinedScore.toF
       interviewFocus,
       industry,
     };
-
-    console.log("\n=== REFINE PERSONA STEP - OUTPUT DATA ===");
-    console.log("Output Keys:", Object.keys(output));
-    console.log("PersonaId:", output.personaId);
-    console.log("PersonaDescription:", output.personaDescription);
-    console.log("Context:", output.context);
-    console.log("Topic:", output.topic);
-    console.log("Industry:", output.industry);
-    console.log("InterviewFocus:", output.interviewFocus);
-    console.log("QuestionCount:", output.questionCount);
 
     return output;
   },

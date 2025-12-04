@@ -131,10 +131,6 @@ export const researchStep = createStep({
         },
       });
 
-      logger?.info(
-        `✅ Research completed successfully. Found ${researchOutput.sources.length} sources, ${researchOutput.top_findings.length} findings.`
-      );
-
       return {
         personaDescription,
         industry,

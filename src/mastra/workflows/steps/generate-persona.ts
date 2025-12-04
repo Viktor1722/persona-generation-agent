@@ -45,26 +45,6 @@ export const generatePersonaStep = createStep({
         })
       ),
     }),
-
-    qualityScore: z.number(),
-    scorerFeedback: z.object({
-      score: z.number(),
-      completeness: z.object({
-        score: z.number(),
-        reasoning: z.string(),
-        missingElements: z.array(z.string()),
-      }),
-      suitability: z.object({
-        score: z.number(),
-        reasoning: z.string(),
-        misalignments: z.array(z.string()),
-      }),
-      specificity: z.object({
-        score: z.number(),
-        reasoning: z.string(),
-        vagueAreas: z.array(z.string()),
-      }),
-    }),
   }),
   scorers: {
     personaQuality: {
@@ -106,30 +86,9 @@ export const generatePersonaStep = createStep({
     const personaId = `persona-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const personaProfile = response.text;
 
-    const scorerResult = await personaQualityScorer.run({
-      input: {
-        industry,
-        context,
-        personaDescription,
-        interviewFocus,
-        topic,
-      },
-      output: {
-        personaProfile,
-      },
-    });
-
-    const qualityScore = scorerResult.score;
-    const analysis = scorerResult.analyzeStepResult;
-
-    if (!analysis) {
-      throw new Error("Scorer did not return analysis results");
-    }
-
-    console.log(`Quality Score: ${qualityScore.toFixed(2)}`);
-    console.log(`  Completeness: ${analysis.completeness.score.toFixed(2)}`);
-    console.log(`  Suitability: ${analysis.suitability.score.toFixed(2)}`);
-    console.log(`  Specificity: ${analysis.specificity.score.toFixed(2)}`);
+    console.log(`\n=== PERSONA GENERATED ===`);
+    console.log(`Persona ID: ${personaId}`);
+    console.log(`Profile length: ${personaProfile.length} characters`);
 
     return {
       personaId,
@@ -141,13 +100,6 @@ export const generatePersonaStep = createStep({
       personaDescription,
       context,
       researchOutput,
-      qualityScore,
-      scorerFeedback: {
-        score: qualityScore,
-        completeness: analysis.completeness,
-        suitability: analysis.suitability,
-        specificity: analysis.specificity,
-      },
     };
   },
 });

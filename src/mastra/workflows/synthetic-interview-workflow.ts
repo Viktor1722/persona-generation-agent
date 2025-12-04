@@ -66,7 +66,7 @@ export const syntheticInterviewWorkflow = createWorkflow({
   }),
 })
   .then(researchStep)
-  .then(reviewResearchStep)
+  //.then(reviewResearchStep)
   .then(generatePersonaStep)
   .then(checkPersonaScoreStep)
   .branch([
