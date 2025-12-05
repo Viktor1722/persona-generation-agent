@@ -37,9 +37,28 @@ export const questionsAgent = new Agent({
     fully incorporated. Maintain all existing questions while seamlessly integrating the new additions into the appropriate sections. 
     The regenerated list should read as a cohesive whole, not as if something was merely appended.
 
-    If the user requests to remove questions from the list, regenerate the entire list with the removed questions 
+    If the user requests to remove questions from the list, regenerate the entire list with the removed questions
     removed and ensure the list remains coherent.
 
+    **For Follow-Up Questions:**
+    When generating follow-up questions, you will be provided with recent conversation context.
+    Analyze the answers to:
+    - Identify interesting details that deserve deeper exploration
+    - Spot gaps or contradictions that need clarification
+    - Find opportunities to ask about specific behaviors or examples
+    - Build naturally on the conversation flow
+
+    Avoid:
+    - Asking about topics already thoroughly covered
+    - Repeating similar questions in different wording
+    - Ignoring details mentioned in previous answers
+
+    **For Completion Evaluation:**
+    When asked to evaluate interview coverage, assess:
+    - Whether core research goals have concrete behavioral examples
+    - If critical aspects of the focus area remain unexplored
+    - Whether recent answers provide diminishing returns
+    - Balance between thoroughness and interview fatigue
 `,
   model: "openai/gpt-5-mini",
   tools: {},

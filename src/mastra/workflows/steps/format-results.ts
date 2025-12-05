@@ -7,7 +7,7 @@ export const formatResultsStep = createStep({
     "Format the interview results with metadata and persona refinement info",
   inputSchema: z.object({
     personaId: z.string(),
-    personaProfile: z.string(),
+    personaProfile: z.string().optional(),
     transcript: z.array(
       z.object({
         question: z.string(),
@@ -17,6 +17,19 @@ export const formatResultsStep = createStep({
     topic: z.string(),
     questionCount: z.number(),
     industry: z.string(),
+    interviewMetadata: z
+      .object({
+        totalQuestions: z.number(),
+        earlyExit: z.boolean(),
+        exitReason: z.string(),
+        coverageAssessment: z
+          .object({
+            goalsCovered: z.array(z.string()),
+            goalsRemaining: z.array(z.string()),
+          })
+          .optional(),
+      })
+      .optional(),
   }),
   outputSchema: z.object({
     personaId: z.string(),
@@ -37,6 +50,19 @@ export const formatResultsStep = createStep({
       originalScore: z.number().optional(),
       finalScore: z.number().optional(),
       improvementNotes: z.string().optional(),
+      interviewMetadata: z
+        .object({
+          totalQuestions: z.number(),
+          earlyExit: z.boolean(),
+          exitReason: z.string(),
+          coverageAssessment: z
+            .object({
+              goalsCovered: z.array(z.string()),
+              goalsRemaining: z.array(z.string()),
+            })
+            .optional(),
+        })
+        .optional(),
     }),
   }),
   execute: async ({ inputData, getStepResult }) => {
@@ -47,6 +73,7 @@ export const formatResultsStep = createStep({
       topic,
       industry,
       questionCount,
+      interviewMetadata,
     } = inputData;
 
     const interviewId = `interview-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -88,6 +115,26 @@ export const formatResultsStep = createStep({
       console.log("No refinement information available");
     }
 
+    // Log dynamic interview metadata if present
+    if (interviewMetadata) {
+      console.log("\n=== DYNAMIC INTERVIEW SUMMARY ===");
+      console.log(`Questions asked: ${interviewMetadata.totalQuestions}`);
+      console.log(
+        `Early exit: ${interviewMetadata.earlyExit ? "YES" : "NO"}`
+      );
+      console.log(`Exit reason: ${interviewMetadata.exitReason}`);
+      if (interviewMetadata.coverageAssessment) {
+        console.log(
+          `Goals covered: ${interviewMetadata.coverageAssessment.goalsCovered.join(", ")}`
+        );
+        if (interviewMetadata.coverageAssessment.goalsRemaining.length > 0) {
+          console.log(
+            `Goals remaining: ${interviewMetadata.coverageAssessment.goalsRemaining.join(", ")}`
+          );
+        }
+      }
+    }
+
     return {
       personaId,
       personaProfile,
@@ -102,6 +149,7 @@ export const formatResultsStep = createStep({
         originalScore,
         finalScore,
         improvementNotes,
+        interviewMetadata,
       },
     };
   },

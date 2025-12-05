@@ -7,11 +7,16 @@ import { interviewAgent } from "./agents/interview-agent";
 import { researchAgent } from "./agents/research-agent";
 import { syntheticInterviewWorkflowNew } from "./workflows/synthetic-interview-workflow-new";
 import { syntheticInterviewWorkflow } from "./workflows/synthetic-interview-workflow";
+import { syntheticInterviewWorkflowDynamic } from "./workflows/synthetic-interview-workflow-dynamic";
 import { multiInterviewConsistencyScorer } from "./scorers/interview";
 
 export const mastra = new Mastra({
   agents: { questionsAgent, personaAgent, interviewAgent, researchAgent },
-  workflows: { syntheticInterviewWorkflowNew, syntheticInterviewWorkflow },
+  workflows: {
+    syntheticInterviewWorkflowNew,
+    syntheticInterviewWorkflow,
+    syntheticInterviewWorkflowDynamic,
+  },
   scorers: {
     multiInterviewConsistencyScorer,
   },
