@@ -30,6 +30,8 @@ export const conductDynamicInterviewStep = createStep({
   }),
 
   outputSchema: z.object({
+    personaProfile: z.string(),
+    personaDescription: z.string(),
     personaId: z.string(),
     transcript: z.array(
       z.object({
@@ -44,10 +46,6 @@ export const conductDynamicInterviewStep = createStep({
       totalQuestions: z.number(),
       earlyExit: z.boolean(),
       exitReason: z.string(),
-      coverageAssessment: z.object({
-        goalsCovered: z.array(z.string()),
-        goalsRemaining: z.array(z.string()),
-      }),
     }),
   }),
 
@@ -74,7 +72,6 @@ export const conductDynamicInterviewStep = createStep({
     const transcript: Array<{ question: string; answer: string }> = [];
     let earlyExit = false;
     let exitReason = "Reached maximum question count";
-    let coverageAssessment: any = undefined;
 
     // Update tracing with interview start
     tracingContext.currentSpan?.update({
@@ -257,6 +254,8 @@ Answer as this persona would, naturally and authentically. Reference your specif
     console.log(`Exit reason: ${exitReason}`);
 
     return {
+      personaProfile,
+      personaDescription,
       personaId,
       transcript,
       topic,
@@ -266,7 +265,6 @@ Answer as this persona would, naturally and authentically. Reference your specif
         totalQuestions: questionsAsked,
         earlyExit,
         exitReason,
-        coverageAssessment,
       },
     };
   },

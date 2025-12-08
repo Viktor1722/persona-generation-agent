@@ -7,7 +7,8 @@ export const formatResultsStep = createStep({
     "Format the interview results with metadata and persona refinement info",
   inputSchema: z.object({
     personaId: z.string(),
-    personaProfile: z.string().optional(),
+    personaProfile: z.string(),
+    personaDescription: z.string(),
     transcript: z.array(
       z.object({
         question: z.string(),
@@ -119,9 +120,7 @@ export const formatResultsStep = createStep({
     if (interviewMetadata) {
       console.log("\n=== DYNAMIC INTERVIEW SUMMARY ===");
       console.log(`Questions asked: ${interviewMetadata.totalQuestions}`);
-      console.log(
-        `Early exit: ${interviewMetadata.earlyExit ? "YES" : "NO"}`
-      );
+      console.log(`Early exit: ${interviewMetadata.earlyExit ? "YES" : "NO"}`);
       console.log(`Exit reason: ${interviewMetadata.exitReason}`);
       if (interviewMetadata.coverageAssessment) {
         console.log(

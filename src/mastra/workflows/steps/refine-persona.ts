@@ -28,24 +28,26 @@ export const refinePersonaStep = createStep({
     }),
     needsRefinement: z.boolean(),
     qualityScore: z.number(),
-    scorerFeedback: z.object({
-      score: z.number(),
-      completeness: z.object({
+    scorerFeedback: z
+      .object({
         score: z.number(),
-        reasoning: z.string(),
-        missingElements: z.array(z.string()),
-      }),
-      suitability: z.object({
-        score: z.number(),
-        reasoning: z.string(),
-        misalignments: z.array(z.string()),
-      }),
-      specificity: z.object({
-        score: z.number(),
-        reasoning: z.string(),
-        vagueAreas: z.array(z.string()),
-      }),
-    }),
+        completeness: z.object({
+          score: z.number(),
+          reasoning: z.string(),
+          missingElements: z.array(z.string()),
+        }),
+        suitability: z.object({
+          score: z.number(),
+          reasoning: z.string(),
+          misalignments: z.array(z.string()),
+        }),
+        specificity: z.object({
+          score: z.number(),
+          reasoning: z.string(),
+          vagueAreas: z.array(z.string()),
+        }),
+      })
+      .optional(),
   }),
   outputSchema: z.object({
     personaId: z.string(),
@@ -194,7 +196,7 @@ Generate the COMPLETE refined persona following all guidelines. Make it perfect 
     // - Specificity gaps: ${scorerFeedback.specificity.vagueAreas.join(", ") || "None"}
     // Original score: ${qualityScore.toFixed(2)} → Refined score: ${refinedScore.toFixed(2)}`;
 
-    const output = {
+    return {
       personaId,
       personaProfile: refinedPersonaProfile,
       personaDescription,
@@ -204,7 +206,5 @@ Generate the COMPLETE refined persona following all guidelines. Make it perfect 
       interviewFocus,
       industry,
     };
-
-    return output;
   },
 });
